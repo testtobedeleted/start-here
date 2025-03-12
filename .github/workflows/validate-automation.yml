@@ -1,0 +1,17 @@
+name: Check Membership Onboarding Automation Workflow
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/invite.yml"
+
+jobs:
+  check-invite-modification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Check if invite.yml was modified
+        run: |
+          echo "The file .github/workflows/invite.yml was modified in this PR."
