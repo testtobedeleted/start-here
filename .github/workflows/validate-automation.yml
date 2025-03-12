@@ -14,13 +14,6 @@ jobs:
 
       - name: Check if invite.yml was modified
         run: |
-          echo "The file .github/workflows/invite.yml was modified in this PR."
-      
-      - name: Report Success
-        run: |
-          curl -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
-            -d '{"state": "success", "context": "check-invite-modification", "description": "Invite.yml check passed"}'
-
+          echo "invite.yml was modified in this PR. Manual review required."
+          exit 1
 
