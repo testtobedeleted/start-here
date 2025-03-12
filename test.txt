@@ -1,1 +1,1 @@
-test fail external pr invite.yml
+test success external pr fixed invite.yml
