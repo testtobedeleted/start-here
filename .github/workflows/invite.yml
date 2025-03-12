@@ -36,7 +36,7 @@ jobs:
       - name: Check if User is Already a Member
         id: check_membership
         env:
-          ORGANIZATION_NAME: gdsc-us-midwest-os
+          ORGANIZATION_NAME: elaine-internal-test
           TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
           STATUS=$(curl -o /dev/null -w "%{http_code}" -s -L \
@@ -52,7 +52,7 @@ jobs:
 
       - name: Invite Members
         env:
-          ORGANIZATION_NAME: gdsc-us-midwest-os
+          ORGANIZATION_NAME: elaine-internal-test
           TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
           echo "Inviting $USER_TO_INVITE to $ORGANIZATION_NAME..."
