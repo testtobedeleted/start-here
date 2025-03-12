@@ -3,7 +3,7 @@ name: Validate Automation Changes
 on:
   pull_request:
     paths:
-      - '.github/workflows/**' # Trigger on any workflow file change
+      - '.github/workflows/**'
 
 jobs:
   check-invite-modification:
@@ -12,7 +12,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Full checkout
+          fetch-depth: 0
 
       - name: Checkout main branch
         uses: actions/checkout@v4
@@ -23,19 +23,23 @@ jobs:
       - name: Check for changes in invite.yml
         id: check-changes
         run: |
+          echo "Starting diff check..."
           if [[ "$(diff .github/workflows/invite.yml main-branch/.github/workflows/invite.yml)" ]]; then
-            echo "::set-output name=changed::true"
+            echo "Changes detected."
+            echo "CHANGED=true" >> $GITHUB_ENV
           else
-            echo "::set-output name=changed::false"
+            echo "No changes detected."
+            echo "CHANGED=false" >> $GITHUB_ENV
           fi
+          echo "Diff check completed."
 
       - name: Fail if invite.yml was changed
-        if: steps.check-changes.outputs.changed == 'true'
+        if: env.CHANGED == 'true'
         run: |
           echo "invite.yml workflow was modified. Changes to this file are not allowed."
-          exit 1 # Fail the workflow
+          exit 1
 
       - name: Pass if invite.yml was not changed
-        if: steps.check-changes.outputs.changed == 'false'
+        if: env.CHANGED == 'false'
         run: |
           echo "invite.yml workflow was not modified. Validation passed."
