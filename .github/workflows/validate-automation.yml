@@ -44,9 +44,3 @@ jobs:
         if: env.CHANGED == 'false'
         run: |
           echo "invite.yml workflow was not modified. Validation passed."
-
-      - name: Force Status (Debugging)
-        if: always()
-        run: |
-          echo "Forcing status update..."
-          echo "Status check completed."
