@@ -49,15 +49,18 @@ jobs:
         
       - name: Check if User is Already a Member
         id: check_membership
+        env:
+          ORGANIZATION_NAME: gdsc-us-midwest-os
+          TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
           STATUS=$(curl -o /dev/null -w "%{http_code}" -s -L \
             -X GET \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $TOKEN" \
-            "https://api.github.com/orgs/$ORGANIZATION_NAME/members/$USER_TO_INVITE")
+            "https://api.github.com/orgs/$ORGANIZATION_NAME/members/${{ github.event.pull_request.user.login }}")
 
           if [ "$STATUS" -eq 204 ]; then
-            echo "User is already a member, skipping invitation."
+            echo "User is already a member. Skipping invitation."
             exit 0
           fi
 
