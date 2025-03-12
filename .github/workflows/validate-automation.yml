@@ -13,7 +13,24 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Check if invite.yml was modified
+        id: check_invite_modification
         run: |
-          echo "invite.yml was modified in this PR. Manual review required."
-          exit 1
+          echo "Checking if .github/workflows/invite.yml was modified in this PR."
+          # List files changed in the pull request and check if invite.yml is among them
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          echo "Changed files: $CHANGED_FILES"
+          if echo "$CHANGED_FILES" | grep -q ".github/workflows/invite.yml"; then
+            echo "invite.yml was modified in this PR. Manual review required."
+            echo "state=failure" >> $GITHUB_ENV
+          else
+            echo "invite.yml was not modified. Proceeding with success."
+            echo "state=success" >> $GITHUB_ENV
+          fi
 
+      - name: Report Status
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
+            -d "{\"state\": \"${{ env.state }}\", \"context\": \"check-invite-modification\", \"description\": \"invite.yml check: ${{ env.state }}\"}"
