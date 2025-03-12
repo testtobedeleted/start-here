@@ -5,7 +5,7 @@ on:
     types:
       - closed
     branches:
-      - main
+      - main # Or whatever your main branch is
 
 jobs:
   invite_member:
@@ -40,14 +40,14 @@ jobs:
 
           if [[ "$STATUS" -eq 204 ]]; then
             echo "User is already a member. Skipping invitation."
-            echo "::set-output name=is_member::true"
+            echo "IS_MEMBER=true" >> $GITHUB_ENV
           else
             echo "User is not a member. Proceeding with invitation."
-            echo "::set-output name=is_member::false"
+            echo "IS_MEMBER=false" >> $GITHUB_ENV
           fi
 
       - name: Invite Members
-        if: steps.check_membership.outputs.is_member == 'false'
+        if: env.IS_MEMBER == 'false'
         env:
           ORGANIZATION_NAME: ${{ secrets.ORGANIZATION_NAME }}
           TOKEN: ${{ steps.generate_token.outputs.token }}
