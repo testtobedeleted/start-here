@@ -12,11 +12,6 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-      - name: Check if PR is from the same repo
-        if: github.event.pull_request.head.repo.full_name != github.repository
-        run: |
-          echo "PR is from a fork. Exiting for security reasons."
-          exit 1
 
       - name: Generate token
         id: generate_token
