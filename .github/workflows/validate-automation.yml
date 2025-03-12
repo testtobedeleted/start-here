@@ -22,7 +22,10 @@ jobs:
         id: check-changes
         run: |
           echo "Starting diff check..."
-          if [[ "$(diff .github/workflows/invite.yml main-branch/.github/workflows/invite.yml)" ]]; then
+          diff .github/workflows/invite.yml main-branch/.github/workflows/invite.yml
+          DIFF_STATUS=$?
+          echo "Diff status: $DIFF_STATUS"
+          if [[ $DIFF_STATUS -ne 0 ]]; then
             echo "Changes detected."
             echo "CHANGED=true" >> $GITHUB_ENV
           else
@@ -41,3 +44,9 @@ jobs:
         if: env.CHANGED == 'false'
         run: |
           echo "invite.yml workflow was not modified. Validation passed."
+
+      - name: Force Status (Debugging)
+        if: always()
+        run: |
+          echo "Forcing status update..."
+          echo "Status check completed."
