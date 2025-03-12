@@ -14,4 +14,6 @@ jobs:
 
       - name: Check if invite.yml was modified
         run: |
-          echo "The file .github/workflows/invite.yml was modified in this PR."
+          echo "invite.yml was modified in this PR. Manual review required."
+          exit 1
+
