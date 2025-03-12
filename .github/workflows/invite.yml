@@ -17,15 +17,14 @@ jobs:
         id: generate_token
         uses: tibdex/github-app-token@v1
         with:
-          app_id: ${{ secrets.APP_ID }}
-          installation_id: ${{ secrets.INSTALLATION_ID }}
-          private_key: ${{ secrets.PRIVATE_KEY }}
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
 
       - name: Check if User is Already a Member
         id: check_membership
         env:
           ORGANIZATION_NAME: ${{ secrets.ORGANIZATION_NAME }}
-          TOKEN: ${{ steps.generate_token.outputs.token }}
+          TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           STATUS=$(curl -o /dev/null -w "%{http_code}" -s -L \
             -X GET \
@@ -45,7 +44,7 @@ jobs:
         if: env.IS_MEMBER == 'false'
         env:
           ORGANIZATION_NAME: ${{ secrets.ORGANIZATION_NAME }}
-          TOKEN: ${{ steps.generate_token.outputs.token }}
+          TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           echo "Inviting ${{ github.event.pull_request.user.login }} to $ORGANIZATION_NAME..."
           RESPONSE=$(curl -s -o response.json -w "%{http_code}" -X POST \
