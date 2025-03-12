@@ -1,36 +1,35 @@
-name: Check Membership Onboarding Automation Workflow
+name: Validate Automation Changes
 
 on:
   pull_request:
     paths:
-      - ".github/workflows/invite.yml"
+      - '.github/workflows/**' # Trigger on any workflow file change
 
 jobs:
   check-invite-modification:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # Need to fetch previous commit for diff
 
-      - name: Check if invite.yml was modified
-        id: check_invite_modification
+      - name: Check for changes in invite.yml
+        id: check-changes
         run: |
-          echo "Checking if .github/workflows/invite.yml was modified in this PR."
-          # List files changed in the pull request and check if invite.yml is among them
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
-          echo "Changed files: $CHANGED_FILES"
-          if echo "$CHANGED_FILES" | grep -q ".github/workflows/invite.yml"; then
-            echo "invite.yml was modified in this PR. Manual review required."
-            echo "state=failure" >> $GITHUB_ENV
+          if git diff --name-only HEAD~1 HEAD | grep -q '.github/workflows/invite.yml'; then
+            echo "::set-output name=changed::true"
           else
-            echo "invite.yml was not modified. Proceeding with success."
-            echo "state=success" >> $GITHUB_ENV
+            echo "::set-output name=changed::false"
           fi
 
-      - name: Report Status
+      - name: Fail if invite.yml was changed
+        if: steps.check-changes.outputs.changed == 'true'
         run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
-            -d "{\"state\": \"${{ env.state }}\", \"context\": \"check-invite-modification\", \"description\": \"invite.yml check: ${{ env.state }}\"}"
+          echo "invite.yml workflow was modified. Changes to this file are not allowed."
+          exit 1 # Fail the workflow
+
+      - name: Pass if invite.yml was not changed
+        if: steps.check-changes.outputs.changed == 'false'
+        run: |
+          echo "invite.yml workflow was not modified. Validation passed."
