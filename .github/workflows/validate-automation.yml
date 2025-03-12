@@ -2,10 +2,6 @@ name: Validate Automation Changes
 
 on:
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
 
 jobs:
   check-invite-modification:
