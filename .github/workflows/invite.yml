@@ -1,4 +1,4 @@
-name: Invite Member on PR Merge
+name: Invite Member on PR Mergews
 
 on:
   pull_request:
