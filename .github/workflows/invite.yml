@@ -5,7 +5,8 @@ on:
     types:
       - closed
     branches:
-      - main # Or whatever your main branch is
+      - main
+
 jobs:
   invite_member:
     if: github.event.pull_request.merged == true
@@ -37,12 +38,16 @@ jobs:
             -H "Authorization: Bearer $TOKEN" \
             "https://api.github.com/orgs/$ORGANIZATION_NAME/members/${{ github.event.pull_request.user.login }}")
 
-          if [ "$STATUS" -eq 204 ]; then
+          if [[ "$STATUS" -eq 204 ]]; then
             echo "User is already a member. Skipping invitation."
-            exit 0
+            echo "::set-output name=is_member::true"
+          else
+            echo "User is not a member. Proceeding with invitation."
+            echo "::set-output name=is_member::false"
           fi
 
       - name: Invite Members
+        if: steps.check_membership.outputs.is_member == 'false'
         env:
           ORGANIZATION_NAME: ${{ secrets.ORGANIZATION_NAME }}
           TOKEN: ${{ steps.generate_token.outputs.token }}
