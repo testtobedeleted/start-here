@@ -2,8 +2,10 @@ name: Validate Automation Changes
 
 on:
   pull_request:
-    paths:
-      - '.github/workflows/**'
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 jobs:
   check-invite-modification:
