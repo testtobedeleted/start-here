@@ -1,15 +1,18 @@
-name: Invite Members on PR Merge
+name: Invite Member on PR Merge
 
 on:
-  pull_request_target:
+  pull_request:
     types:
       - closed
+    branches:
+      - main
 
 jobs:
-  validate_pr:
+  invite_member:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-      - name: Check PR is from the same repo
+      - name: Check if PR is from the same repo
         if: github.event.pull_request.head.repo.full_name != github.repository
         run: |
           echo "PR is from a fork. Exiting for security reasons."
@@ -23,42 +26,39 @@ jobs:
           installation_id: ${{ secrets.INSTALLATION_ID }}
           private_key: ${{ secrets.PRIVATE_KEY }}
 
-      - name: Check if invite.yml was modified
-        id: check_invite_file
-        run: |
-          MODIFIED=$(curl -s -H "Authorization: token ${{ steps.generate_token.outputs.token }}" \
-          -H "Accept: application/vnd.github.v3+json" \
-          https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files | jq -r '.[] | select(.filename == ".github/workflows/invite.yml")')
-          
-          if [ -n "$MODIFIED" ]; then
-            echo "invite.yml was modified in this PR. Manual review required."
-            exit 1
-          else
-            echo "invite.yml was not modified. Proceeding."
-          fi
-
-  invite_members:
-    needs: validate_pr
-    runs-on: ubuntu-latest
-    steps:
-      - name: Fetch User ID
-        id: fetch_user_id
-        run: |
-          USER_TO_INVITE=${{ github.event.pull_request.user.id }}
-          echo "USER_TO_INVITE=$USER_TO_INVITE" >> $GITHUB_ENV
-
-      - name: Invite Members
+      - name: Check if User is Already a Member
+        id: check_membership
         env:
-          ORGANIZATION_NAME: gdsc-us-midwest-os
+          ORGANIZATION_NAME: ${{ secrets.ORGANIZATION_NAME }}
           TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
-          echo "Inviting $USER_TO_INVITE to $ORGANIZATION_NAME..."
+          STATUS=$(curl -o /dev/null -w "%{http_code}" -s -L \
+            -X GET \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $TOKEN" \
+            "https://api.github.com/orgs/$ORGANIZATION_NAME/members/${{ github.event.pull_request.user.login }}")
+
+          if [[ "$STATUS" -eq 204 ]]; then
+            echo "User is already a member. Skipping invitation."
+            echo "IS_MEMBER=true" >> $GITHUB_ENV
+          else
+            echo "User is not a member. Proceeding with invitation."
+            echo "IS_MEMBER=false" >> $GITHUB_ENV
+          fi
+
+      - name: Invite Members
+        if: env.IS_MEMBER == 'false'
+        env:
+          ORGANIZATION_NAME: ${{ secrets.ORGANIZATION_NAME }}
+          TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          echo "Inviting ${{ github.event.pull_request.user.login }} to $ORGANIZATION_NAME..."
           RESPONSE=$(curl -s -o response.json -w "%{http_code}" -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/orgs/$ORGANIZATION_NAME/invitations \
-            -d "{\"invitee_id\": $USER_TO_INVITE, \"role\":\"direct_member\"}")
+            -d "{\"invitee_id\": ${{ github.event.pull_request.user.id }}, \"role\":\"direct_member\"}")
 
           if [ "$RESPONSE" -ne 201 ]; then
             echo "Failed to invite user. GitHub API Response:"
