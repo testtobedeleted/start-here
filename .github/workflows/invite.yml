@@ -46,6 +46,20 @@ jobs:
         run: |
           USER_TO_INVITE=${{ github.event.pull_request.user.id }}
           echo "USER_TO_INVITE=$USER_TO_INVITE" >> $GITHUB_ENV
+        
+      - name: Check if User is Already a Member
+        id: check_membership
+        run: |
+          STATUS=$(curl -o /dev/null -w "%{http_code}" -s -L \
+            -X GET \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $TOKEN" \
+            "https://api.github.com/orgs/$ORGANIZATION_NAME/members/$USER_TO_INVITE")
+
+          if [ "$STATUS" -eq 204 ]; then
+            echo "User is already a member, skipping invitation."
+            exit 0
+          fi
 
       - name: Invite Members
         env:
