@@ -1,4 +1,4 @@
-name: Validate Automation Changes
+name: Workflow Integrity Check
 
 on:
   pull_request:
