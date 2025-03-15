@@ -31,11 +31,11 @@ jobs:
         installation_id: ${{ secrets.INSTALLATION_ID }}
         private_key: ${{ secrets.PRIVATE_KEY }}
     - name: Invite contributor to the organization
-        uses: lekterable/inclusive-organization-action@v1.1.0
-        with:
-          organization: elaine-internal-test
-        env:
-          ACCESS_TOKEN: ${{ steps.generate_token.outputs.token }}
+      uses: lekterable/inclusive-organization-action@v1.1.0
+      with:
+        organization: elaine-internal-test
+      env:
+        ACCESS_TOKEN: ${{ steps.generate_token.outputs.token }}
     # - name: Fetch User ID
     #   id: fetch_user_id
     #   run: |
