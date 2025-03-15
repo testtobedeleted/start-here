@@ -33,14 +33,14 @@ jobs:
     - name: Fetch User ID
       id: fetch_user_id
       run: |
-        USER_TO_INVITE=${{ github.event.pull_request.user.login }}
-        echo "USER_TO_INVITE=$USER_TO_INVITE" >> $GITHUB_ENV
+        USER_TO_INVITE=${{ github.event.pull_request.user.id }}
+        "USER_TO_INVITE=$USER_TO_INVITE" >> $GITHUB_ENV
     - name: Invite Members
       env:
         ORGANIZATION_NAME: elaine-internal-test
         TOKEN: ${{ steps.generate_token.outputs.token }}
       run: |
-        echo "Inviting $USER_TO_INVITE to $ORGANIZATION_NAME"
+        echo "Inviting user to $ORGANIZATION_NAME"
         curl -L \
           -X POST \
           -H "Accept: application/vnd.github+json" \
