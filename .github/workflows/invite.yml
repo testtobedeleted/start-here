@@ -34,7 +34,7 @@ jobs:
       id: fetch_user_id
       run: |
         USER_TO_INVITE=${{ github.event.pull_request.user.id }}
-        "USER_TO_INVITE=$USER_TO_INVITE" >> $GITHUB_ENV
+        echo "USER_TO_INVITE=$USER_TO_INVITE" >> $GITHUB_ENV
     - name: Invite Members
       env:
         ORGANIZATION_NAME: elaine-internal-test
