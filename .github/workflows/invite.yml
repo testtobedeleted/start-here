@@ -30,21 +30,27 @@ jobs:
         app_id: ${{ secrets.APP_ID }}
         installation_id: ${{ secrets.INSTALLATION_ID }}
         private_key: ${{ secrets.PRIVATE_KEY }}
-    - name: Fetch User ID
-      id: fetch_user_id
-      run: |
-        USER_TO_INVITE=${{ github.event.pull_request.user.id }}
-        echo "USER_TO_INVITE=$USER_TO_INVITE" >> $GITHUB_ENV
-    - name: Invite Members
-      env:
-        ORGANIZATION_NAME: elaine-internal-test
-        TOKEN: ${{ steps.generate_token.outputs.token }}
-      run: |
-        echo "Inviting user to $ORGANIZATION_NAME"
-        curl -L \
-          -X POST \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer $TOKEN" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/orgs/$ORGANIZATION_NAME/invitations \
-          -d "{\"invitee_id\": $USER_TO_INVITE, \"role\":\"direct_member\"}"
+    - name: Invite contributor to the organization
+        uses: lekterable/inclusive-organization-action@v1.1.0
+        with:
+          organization: elaine-internal-test
+        env:
+          ACCESS_TOKEN: ${{ steps.generate_token.outputs.token }}
+    # - name: Fetch User ID
+    #   id: fetch_user_id
+    #   run: |
+    #     USER_TO_INVITE=${{ github.event.pull_request.user.id }}
+    #     echo "USER_TO_INVITE=$USER_TO_INVITE" >> $GITHUB_ENV
+    # - name: Invite Members
+    #   env:
+    #     ORGANIZATION_NAME: elaine-internal-test
+    #     TOKEN: ${{ steps.generate_token.outputs.token }}
+    #   run: |
+    #     echo "Inviting user to $ORGANIZATION_NAME"
+    #     curl -L \
+    #       -X POST \
+    #       -H "Accept: application/vnd.github+json" \
+    #       -H "Authorization: Bearer $TOKEN" \
+    #       -H "X-GitHub-Api-Version: 2022-11-28" \
+    #       https://api.github.com/orgs/$ORGANIZATION_NAME/invitations \
+    #       -d "{\"invitee_id\": $USER_TO_INVITE, \"role\":\"direct_member\"}"
